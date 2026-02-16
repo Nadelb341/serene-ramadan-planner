@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { Lock } from "lucide-react";
 
 const Settings = () => {
   const { user, profile } = useAuth();
@@ -13,6 +14,12 @@ const Settings = () => {
   const [gender, setGender] = useState<string>(profile?.gender || "Fille");
   const [dob, setDob] = useState(profile?.date_of_birth || "");
   const [saving, setSaving] = useState(false);
+
+  // Change password
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPw, setChangingPw] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -33,6 +40,31 @@ const Settings = () => {
     if (error) toast.error(error.message);
     else toast.success("Profil mis à jour ✓");
     setSaving(false);
+  };
+
+  const changePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      toast.error("Les mots de passe ne correspondent pas");
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error("Le mot de passe doit faire au moins 6 caractères");
+      return;
+    }
+    setChangingPw(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success("Mot de passe modifié avec succès ✓");
+      setNewPassword("");
+      setConfirmPassword("");
+      setShowPasswordForm(false);
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setChangingPw(false);
+    }
   };
 
   return (
@@ -71,6 +103,47 @@ const Settings = () => {
           <Button onClick={save} disabled={saving} className="w-full">
             {saving ? "Sauvegarde..." : "Enregistrer"}
           </Button>
+        </div>
+
+        {/* Change Password Section */}
+        <div className="mt-4 bg-card rounded-xl p-4 border border-border">
+          <button
+            onClick={() => setShowPasswordForm(!showPasswordForm)}
+            className="flex items-center gap-2 w-full text-sm font-medium text-foreground hover:text-accent transition-colors"
+          >
+            <Lock size={16} />
+            Changer le mot de passe
+          </button>
+
+          {showPasswordForm && (
+            <form onSubmit={changePassword} className="mt-4 space-y-3 animate-fade-in">
+              <div>
+                <Label>Nouveau mot de passe</Label>
+                <Input
+                  type="password"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  minLength={6}
+                />
+              </div>
+              <div>
+                <Label>Confirmer le mot de passe</Label>
+                <Input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  minLength={6}
+                />
+              </div>
+              <Button type="submit" disabled={changingPw} className="w-full" variant="outline">
+                {changingPw ? "Modification..." : "Modifier le mot de passe"}
+              </Button>
+            </form>
+          )}
         </div>
       </main>
     </div>
