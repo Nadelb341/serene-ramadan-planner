@@ -54,8 +54,6 @@ const Auth = () => {
         if (error) throw error;
 
         if (!rememberMe) {
-          // If not remember me, session will expire when browser closes
-          // Supabase persists by default, so we note this preference
           sessionStorage.setItem("ramadan_no_persist", "true");
         } else {
           sessionStorage.removeItem("ramadan_no_persist");
