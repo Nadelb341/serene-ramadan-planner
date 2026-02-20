@@ -6,23 +6,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Save, Star } from "lucide-react";
-
-const VERSES = [
-  { text: "\"Et que la haine envers un peuple ne vous incite pas à être injuste.\"", ref: "(5:8)" },
-  { text: "\"Une fois que tu t'es décidé, confie-toi donc à Allah. Allah aime, en vérité, ceux qui Lui font confiance.\"", ref: "(3:159)" },
-  { text: "\"Allah n'impose à aucune âme une charge supérieure à sa capacité.\"", ref: "(2:286)" },
-  { text: "\"En vérité, avec la difficulté il y a une facilité.\"", ref: "(94:6)" },
-  { text: "\"Et invoquez-Moi, Je vous répondrai.\"", ref: "(40:60)" },
-];
-
-const TIPS = [
-  "Pour chaque objectif, divise-le en petites étapes réalisables et fixe une action précise pour chaque jour.",
-  "Si tu hésites à agir, compte jusqu'à 5 et lance-toi.",
-  "Bois suffisamment d'eau entre l'Iftar et le Sahur.",
-  "Prends quelques minutes chaque jour pour faire le dhikr en pleine conscience.",
-  "Donne en charité, même si c'est peu. Chaque acte compte.",
-];
+import { Save, BookOpen, Star, Sparkles, Heart } from "lucide-react";
+import { RAMADAN_DAYS, EID_PRAYER_INFO, END_RAMADAN_DUA } from "@/data/ramadanContent";
 
 interface Props {
   dayNumber: number;
@@ -79,8 +64,7 @@ const DailyPlanner = ({ dayNumber, onSaved }: Props) => {
   const [saving, setSaving] = useState(false);
   const [existingId, setExistingId] = useState<string | null>(null);
 
-  const verse = VERSES[(dayNumber - 1) % VERSES.length];
-  const tip = TIPS[(dayNumber - 1) % TIPS.length];
+  const dayContent = RAMADAN_DAYS[dayNumber - 1];
 
   useEffect(() => {
     if (!user) return;
@@ -156,22 +140,21 @@ const DailyPlanner = ({ dayNumber, onSaved }: Props) => {
   ];
 
   const showCycle = profile?.gender === "Fille";
+  const phase = dayNumber <= 10 ? "Miséricorde" : dayNumber <= 20 ? "Pardon" : "Protection";
 
   return (
     <div className="space-y-4 animate-fade-in pb-6">
       {/* Header */}
       <div className="bg-card rounded-xl p-4 border border-border">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-1">
           <h3 className="font-display text-lg">Jour {dayNumber} / 30</h3>
-          <div className="flex gap-1 text-xs text-muted-foreground">
-            {["L", "M", "M", "J", "V", "S", "D"].map((d, i) => (
-              <span key={i} className="w-5 text-center">{d}</span>
-            ))}
-          </div>
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-accent/20 text-accent-foreground">
+            {phase}
+          </span>
         </div>
 
         {/* Fasting */}
-        <div className="flex items-center gap-4 mb-3">
+        <div className="flex items-center gap-4 mb-3 mt-3">
           <span className="text-sm font-medium">Je jeûne ?</span>
           {["Oui", "Non"].map(v => (
             <button
@@ -202,7 +185,7 @@ const DailyPlanner = ({ dayNumber, onSaved }: Props) => {
         )}
 
         {/* Energy */}
-        <div className="mb-3">
+        <div className="mb-1">
           <span className="text-sm font-medium block mb-1">Niveau d'énergie</span>
           <div className="flex gap-1">
             {[1, 2, 3, 4, 5].map(l => (
@@ -220,16 +203,60 @@ const DailyPlanner = ({ dayNumber, onSaved }: Props) => {
         </div>
       </div>
 
-      {/* Verse of the day */}
+      {/* 📖 Coran du jour */}
       <div className="bg-primary/10 rounded-xl p-4 border border-primary/20">
-        <h4 className="font-display text-sm font-bold mb-1 text-gold">Verset du jour</h4>
-        <p className="text-sm italic text-foreground">{verse.text}</p>
-        <p className="text-xs text-muted-foreground mt-1">{verse.ref}</p>
+        <div className="flex items-center gap-2 mb-2">
+          <BookOpen size={16} className="text-primary" />
+          <h4 className="font-display text-sm font-bold">📖 Lecture du Coran</h4>
+        </div>
+        <div className="space-y-2">
+          <div>
+            <span className="text-xs font-semibold text-muted-foreground">Méthode 1 :</span>
+            <p className="text-sm text-foreground">{dayContent.coran.method1}</p>
+          </div>
+          <div>
+            <span className="text-xs font-semibold text-muted-foreground">Méthode 2 :</span>
+            <p className="text-sm text-foreground">{dayContent.coran.method2}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ✨ Noms d'Allah */}
+      {dayContent.namesOfAllah.length > 0 && (
+        <div className="bg-accent/10 rounded-xl p-4 border border-accent/20">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles size={16} className="text-accent" />
+            <h4 className="font-display text-sm font-bold">J'apprends les noms d'Allah ﷻ</h4>
+          </div>
+          <ul className="space-y-1">
+            {dayContent.namesOfAllah.map((name, i) => (
+              <li key={i} className="text-sm text-foreground flex items-start gap-2">
+                <Star size={12} className="text-accent mt-1 flex-shrink-0" />
+                {name}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* 🏆 Challenge du jour */}
+      <div className="bg-secondary rounded-xl p-4 border border-border">
+        <h4 className="font-display text-sm font-bold mb-1">🏆 Challenge du jour</h4>
+        <p className="text-sm text-foreground">{dayContent.challenge}</p>
+      </div>
+
+      {/* 📜 Hadith / Rappel */}
+      <div className="bg-primary/5 rounded-xl p-4 border border-primary/15">
+        <h4 className="font-display text-sm font-bold mb-1 text-primary">📜 Hadith / Rappel</h4>
+        <p className="text-sm italic text-foreground">{dayContent.hadith.text}</p>
+        {dayContent.hadith.source && (
+          <p className="text-xs text-muted-foreground mt-1">— {dayContent.hadith.source}</p>
+        )}
       </div>
 
       {/* Essentials */}
       <div className="bg-card rounded-xl p-4 border border-border">
-        <h4 className="font-display text-sm font-bold mb-3">Les essentiels</h4>
+        <h4 className="font-display text-sm font-bold mb-3">✅ Les essentiels</h4>
         <div className="grid grid-cols-2 gap-2">
           {essentials.map(e => (
             <label key={e.key} className="flex items-center gap-2 text-sm cursor-pointer">
@@ -245,7 +272,7 @@ const DailyPlanner = ({ dayNumber, onSaved }: Props) => {
 
       {/* Prayers */}
       <div className="bg-card rounded-xl p-4 border border-border">
-        <h4 className="font-display text-sm font-bold mb-3">Prières</h4>
+        <h4 className="font-display text-sm font-bold mb-3">🕌 Prières</h4>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -277,9 +304,9 @@ const DailyPlanner = ({ dayNumber, onSaved }: Props) => {
 
       {/* Hygiene de vie */}
       <div className="bg-card rounded-xl p-4 border border-border">
-        <h4 className="font-display text-sm font-bold mb-3">Hygiène de vie</h4>
+        <h4 className="font-display text-sm font-bold mb-3">🍽️ Hygiène de vie</h4>
         {([
-          { key: "sahur_notes" as const, label: "🍽️ Sahur" },
+          { key: "sahur_notes" as const, label: "🌅 Sahur" },
           { key: "iftar_notes" as const, label: "🌙 Iftar" },
           { key: "sport_notes" as const, label: "🏃 Sport" },
         ]).map(item => (
@@ -295,15 +322,9 @@ const DailyPlanner = ({ dayNumber, onSaved }: Props) => {
         ))}
       </div>
 
-      {/* Tip */}
-      <div className="bg-secondary rounded-xl p-4 border border-border">
-        <h4 className="font-display text-sm font-bold mb-1 text-gold">Astuce du jour</h4>
-        <p className="text-sm text-foreground">{tip}</p>
-      </div>
-
       {/* Tomorrow */}
       <div className="bg-card rounded-xl p-4 border border-border">
-        <h4 className="font-display text-sm font-bold mb-2">Pour demain Insha'Allah</h4>
+        <h4 className="font-display text-sm font-bold mb-2">🌟 Pour demain Insha'Allah</h4>
         <Textarea
           value={entry.tomorrow_plans}
           onChange={e => update("tomorrow_plans", e.target.value)}
@@ -313,16 +334,16 @@ const DailyPlanner = ({ dayNumber, onSaved }: Props) => {
         />
       </div>
 
-      {/* Right page: Faith, gratitude */}
+      {/* Faith, gratitude */}
       <div className="bg-card rounded-xl p-4 border border-border">
-        <h4 className="font-display text-sm font-bold mb-2">Niveau de foi</h4>
+        <h4 className="font-display text-sm font-bold mb-2">💫 Niveau de foi</h4>
         <div className="flex gap-1 mb-4">
           {Array.from({ length: 10 }, (_, i) => i + 1).map(l => (
             <button
               key={l}
               onClick={() => update("faith_level", l)}
               className={`flex-1 h-7 rounded text-xs font-bold transition-all ${
-                l <= entry.faith_level ? "bg-gold text-primary-foreground" : "bg-muted text-muted-foreground"
+                l <= entry.faith_level ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground"
               }`}
             >
               {l}
@@ -345,6 +366,23 @@ const DailyPlanner = ({ dayNumber, onSaved }: Props) => {
           </div>
         </div>
       </div>
+
+      {/* Special content for last days */}
+      {dayNumber === 30 && (
+        <>
+          <div className="bg-accent/10 rounded-xl p-4 border border-accent/20">
+            <h4 className="font-display text-sm font-bold mb-2">🕌 La prière de l'Aid</h4>
+            <p className="text-sm text-foreground whitespace-pre-line">{EID_PRAYER_INFO}</p>
+          </div>
+          <div className="bg-primary/10 rounded-xl p-4 border border-primary/20">
+            <div className="flex items-center gap-2 mb-2">
+              <Heart size={16} className="text-primary" />
+              <h4 className="font-display text-sm font-bold">🤲 Invocation de fin de Ramadan</h4>
+            </div>
+            <p className="text-sm text-foreground whitespace-pre-line">{END_RAMADAN_DUA}</p>
+          </div>
+        </>
+      )}
 
       {/* Save */}
       <Button onClick={save} disabled={saving} className="w-full gap-2">
