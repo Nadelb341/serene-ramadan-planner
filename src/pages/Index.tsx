@@ -1,9 +1,12 @@
 import { useAuth } from "@/hooks/useAuth";
+import { useParams } from "react-router-dom";
 import Dashboard from "@/pages/Dashboard";
+import DayDetail from "@/pages/DayDetail";
 import Auth from "@/pages/Auth";
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { dayNumber } = useParams();
 
   if (loading) {
     return (
@@ -17,6 +20,7 @@ const Index = () => {
   }
 
   if (!user) return <Auth />;
+  if (dayNumber) return <DayDetail />;
   return <Dashboard />;
 };
 
