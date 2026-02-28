@@ -5,6 +5,7 @@ import AppHeader from "@/components/AppHeader";
 import DayGrid from "@/components/DayGrid";
 import BilanSection from "@/components/BilanSection";
 import NotesSection from "@/components/NotesSection";
+import PrayerTimesWidget from "@/components/PrayerTimesWidget";
 import { Moon, StickyNote } from "lucide-react";
 
 const Dashboard = () => {
@@ -95,6 +96,9 @@ const Dashboard = () => {
                 />
               </div>
             </div>
+
+            {/* Prayer Times */}
+            <PrayerTimesWidget />
 
             {/* Bilan */}
             <BilanSection />
